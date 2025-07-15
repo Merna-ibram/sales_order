@@ -1,17 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <record id="view_order_form_inherit_mobile" model="ir.ui.view">
-        <field name="name">sale.order.form.inherit.mobile</field>
+    <record id="view_order_form_custom" model="ir.ui.view">
+        <field name="name">sale.order.form.custom.view</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
+
+            <!-- زرار واحد فيه Refunds + Customer Orders -->
+            <xpath expr="//header" position="inside">
+                <div class="oe_button_box" name="button_box">
+                    <button type="object"
+                            name="action_view_previous_orders"
+                            class="oe_stat_button"
+                            icon="fa-list">
+                        <field name="num_orders" widget="statinfo" string="Customer Orders"/>
+                    </button>
+
+                    <button type="object"
+                            name="action_view_refunds"
+                            class="oe_stat_button"
+                            icon="fa-undo">
+                        <field name="num_returned" widget="statinfo" string="Refunds"/>
+                    </button>
+                </div>
+            </xpath>
+
+            <!-- أزرار خاصة بالإجراءات -->
+            <xpath expr="//header" position="inside">
+                <button name="action_no_answer" type="object" string="No Answer" class="text-bg-danger" />
+                <button name="action_on_hold" type="object" string="On Hold" class="btn btn-warning" />
+                <button name="action_call_back" type="object" string="Call Back Order" class="btn btn-warning" />
+            </xpath>
+
+            <!-- نخفي زر الإرسال -->
+            <xpath expr="//button[@name='action_quotation_send']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- نخفي زر Confirm -->
+            <xpath expr="//button[@name='action_confirm']" position="replace"/>
+
+            <!-- نضيف الزر الجديد Sales Confirm -->
+            <xpath expr="//header" position="inside">
+                <button name="action_sales_confirm"
+                        string="Sales Confirm"
+                        type="object"
+                        class="btn btn-primary"/>
+            </xpath>
+
+            <!-- مجموعة الحقول حسب التصميم -->
             <xpath expr="//field[@name='partner_id']" position="after">
-                <group>
+                <group string="Customer Info" col="2">
                     <field name="phone"/>
                     <field name="phone2"/>
                     <field name="gender"/>
                 </group>
+
+                <group string="Order Info" col="2">
+                    <field name="payment_type"/>
+                    <field name="total_quantity"/>
+                    <field name="attempts_count"/>
+                    <field name="attempt_date"/>
+                    <field name="last_action_type"/>
+                </group>
             </xpath>
+
+            <!-- عدادات عامة -->
+            <xpath expr="//field[@name='payment_term_id']" position="after">
+                <field name="num_orders"/>
+                <field name="num_cancelled"/>
+                <field name="num_returned"/>
+                <field name="num_delivered"/>
+            </xpath>
+
         </field>
     </record>
 </odoo>

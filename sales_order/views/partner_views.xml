@@ -1,15 +1,15 @@
 <odoo>
     <record id="view_partner_form_inherit_gender" model="ir.ui.view">
-        <field name="name">res.partner.form.inherit.gender</field>
+        <field name="name">res.partner.form.inherit.phone2.gender</field>
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='phone']" position="after">
-                <field name="gender"/>
+
+            <xpath expr="//field[@name='vat']" position="after">
+                <field name="gender" string="Gender"/>
             </xpath>
-            <xpath expr="//field[@name='mobile']" position="replace">
-                <field name="phone2"/>
-                <field name="mobile" invisible="1"/>
+            <xpath expr="//field[@name='mobile']" position="attributes">
+                <attribute name="string">Phone 2</attribute>
             </xpath>
         </field>
     </record>
