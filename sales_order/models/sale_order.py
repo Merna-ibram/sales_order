@@ -2,7 +2,6 @@
 
 from odoo import models, fields, api
 
-
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
@@ -13,7 +12,6 @@ class SaleOrder(models.Model):
     shipping_agent_id = fields.Many2one('res.partner', string="Shipping Agent")
     shipping_company = fields.Char(string="Shipping Company")
     tracking_number = fields.Char(string="Tracking Number")
-
     payment_type = fields.Selection([
         ('cod', 'Cash on Delivery'),
         ('prepaid', 'Prepaid')
@@ -30,6 +28,7 @@ class SaleOrder(models.Model):
 
     state = fields.Selection(selection_add=[
         ('process', 'Processing'),
+        ('returned', 'Returned'),
         ('sales_confirmed', 'Sales Confirmed'),
     ], default='process')
 
@@ -51,7 +50,7 @@ class SaleOrder(models.Model):
             all_orders = self.env['sale.order'].search(domain)
             order.num_orders = len(all_orders)
             order.num_cancelled = len(all_orders.filtered(lambda o: o.state == 'cancel'))
-            order.num_returned = len(all_orders.filtered(lambda o: o.state == 'returned'))
+            order.num_returned = len(all_orders.filtered(lambda o: o.state == 'returned'))  # Add if applicable
             order.num_delivered = len(all_orders.filtered(lambda o: o.state in ['sale', 'done']))
 
     def action_view_previous_orders(self):
@@ -60,20 +59,6 @@ class SaleOrder(models.Model):
             'type': 'ir.actions.act_window',
             'res_model': 'sale.order',
             'domain': [('partner_id', '=', self.partner_id.id)],
-            'view_mode': 'tree,form',
-            'target': 'current',
-        }
-
-    def action_view_refunds(self):
-        self.ensure_one()
-        return {
-            'name': 'Refunded Orders',
-            'type': 'ir.actions.act_window',
-            'res_model': 'sale.order',
-            'domain': [
-                ('partner_id', '=', self.partner_id.id),
-                ('state', '=', 'returned')
-            ],
             'view_mode': 'tree,form',
             'target': 'current',
         }
@@ -102,3 +87,5 @@ class SaleOrder(models.Model):
 
     def action_confirm(self):
         pass
+
+
