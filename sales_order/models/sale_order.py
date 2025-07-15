@@ -31,7 +31,6 @@ class SaleOrder(models.Model):
     state = fields.Selection(selection_add=[
         ('process', 'Processing'),
         ('sales_confirmed', 'Sales Confirmed'),
-        ('returned', 'Returned'),
     ], default='process')
 
     last_action_type = fields.Selection([
