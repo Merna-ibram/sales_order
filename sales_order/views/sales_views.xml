@@ -6,7 +6,6 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
 
-            <!-- زرار واحد فيه Refunds + Customer Orders -->
             <xpath expr="//header" position="inside">
                 <div class="oe_button_box" name="button_box">
                     <button type="object"
@@ -14,13 +13,6 @@
                             class="oe_stat_button"
                             icon="fa-list">
                         <field name="num_orders" widget="statinfo" string="Customer Orders"/>
-                    </button>
-
-                    <button type="object"
-                            name="action_view_refunds"
-                            class="oe_stat_button"
-                            icon="fa-undo">
-                        <field name="num_returned" widget="statinfo" string="Refunds"/>
                     </button>
                 </div>
             </xpath>
