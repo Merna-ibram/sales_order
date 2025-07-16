@@ -23,6 +23,7 @@ class SaleOrder(models.Model):
     num_cancelled = fields.Integer(string="Cancelled Orders", compute="_compute_order_stats", store=True)
     num_returned = fields.Integer(string="Returned Orders", compute="_compute_order_stats", store=True)
     num_delivered = fields.Integer(string="Delivered Orders", compute="_compute_order_stats", store=True)
+    num_replaced = fields.Integer(string="Replaced Orders", compute="_compute_order_stats", store=True)
 
     state = fields.Selection(selection_add=[
         ('process', 'Processing'),
@@ -51,16 +52,23 @@ class SaleOrder(models.Model):
             order.num_cancelled = len(all_orders.filtered(lambda o: o.state == 'cancel'))
             order.num_returned = len(all_orders.filtered(lambda o: o.state == 'returned'))
             order.num_delivered = len(all_orders.filtered(lambda o: o.state in ['sale', 'done']))
+            order.num_replaced = len(all_orders.filtered(lambda o: o.state == 'replacement'))
 
-    def action_view_previous_orders(self):
-        return {
-            'name': 'Previous Orders',
-            'type': 'ir.actions.act_window',
-            'res_model': 'sale.order',
-            'domain': [('partner_id', '=', self.partner_id.id)],
-            'view_mode': 'tree,form',
-            'target': 'current',
-        }
+    def write(self, vals):
+        state_changed = 'state' in vals
+        res = super().write(vals)
+
+        if state_changed:
+            for order in self:
+                if order.partner_id:
+                    related_orders = self.env['sale.order'].search([
+                        ('partner_id', '=', order.partner_id.id)
+                    ])
+                    related_orders._compute_order_stats()
+                    for other in related_orders - order:
+                        other.message_post(body=f"ℹ️ Status updated in another order for this customer.")
+
+        return res
 
     def action_no_answer(self):
         for order in self:
@@ -87,7 +95,69 @@ class SaleOrder(models.Model):
         for order in self:
             old_state = order.state
             order.state = 'sales_confirmed'
-            order.message_post(
-                body=f"✅ {old_state} --> sales_confirmed"
-            )
+            order.message_post(body=f"✅ {old_state} --> sales_confirmed")
 
+    def mark_as_returned(self):
+        for rec in self:
+            old_state = rec.state
+            rec.write({'state': 'returned'})
+            rec.message_post(body="🔁 Changed from {} ➜ Returned".format(old_state))
+
+    def mark_as_replacement(self):
+        for rec in self:
+            old_state = rec.state
+            rec.write({'state': 'replacement'})
+            rec.message_post(body="🔁 Changed from {} ➜ Replacement".format(old_state))
+
+    def mark_as_cancelled(self):
+        for rec in self:
+            if rec.state != 'cancel':
+                old_state = rec.state
+                rec.action_cancel()
+                rec.message_post(body="❌ Changed from {} ➜ Cancelled".format(old_state))
+
+    def action_view_previous_orders(self):
+        return {
+            'name': 'Previous Orders',
+            'type': 'ir.actions.act_window',
+            'res_model': 'sale.order',
+            'domain': [('partner_id', '=', self.partner_id.id)],
+            'view_mode': 'tree,form',
+            'target': 'current',
+        }
+
+    def action_view_refunds(self):
+        return {
+            'name': 'Refunded Orders',
+            'type': 'ir.actions.act_window',
+            'res_model': 'sale.order',
+            'domain': [
+                ('partner_id', '=', self.partner_id.id),
+                ('state', '=', 'returned'),
+            ],
+            'view_mode': 'tree,form',
+            'target': 'current',
+        }
+
+    def action_view_replacements(self):
+        return {
+            'name': 'Replaced Orders',
+            'type': 'ir.actions.act_window',
+            'res_model': 'sale.order',
+            'domain': [
+                ('partner_id', '=', self.partner_id.id),
+                ('state', '=', 'replacement'),
+            ],
+            'view_mode': 'tree,form',
+            'target': 'current',
+        }
+
+    def action_view_cancelled_orders(self):
+        return {
+            'name': 'Cancelled Orders',
+            'type': 'ir.actions.act_window',
+            'res_model': 'sale.order',
+            'domain': [('partner_id', '=', self.partner_id.id), ('state', '=', 'cancel')],
+            'view_mode': 'tree,form',
+            'target': 'current',
+        }
