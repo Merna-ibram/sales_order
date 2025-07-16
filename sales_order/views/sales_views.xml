@@ -49,6 +49,55 @@
 <!--        <field name="domain">[('state', '=', 'cancel')]</field>-->
 <!--    </record>-->
 
+    <!-- ✅ Set as Pending -->
+    <record id="action_set_pending" model="ir.actions.server">
+        <field name="name">Set as Pending</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="binding_model_id" ref="sale.model_sale_order"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+            records.action_set_pending()
+        </field>
+    </record>
+
+    <!-- ✅ Set as Waiting Stock -->
+    <record id="action_set_waiting_stock" model="ir.actions.server">
+        <field name="name">Set as Waiting Stock</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="binding_model_id" ref="sale.model_sale_order"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+             records.action_set_waiting_stock()
+        </field>
+    </record>
+
+    <!-- ✅ Set as Ready to Assign -->
+    <record id="action_set_ready_to_assign" model="ir.actions.server">
+        <field name="name">Set as Ready To Assign</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="binding_model_id" ref="sale.model_sale_order"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+             records.action_set_ready_to_assign()
+        </field>
+    </record>
+
+    <!-- ✅ Set as Assigned to Shipping -->
+    <record id="action_set_assigned_to_shipping" model="ir.actions.server">
+        <field name="name">Set as Assigned to Shipping</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="binding_model_id" ref="sale.model_sale_order"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+            records.action_set_assigned_to_shipping()
+        </field>
+    </record>
+
+
 
     <!-- ✅ Menu items under Orders -->
     <menuitem id="menu_sale_refund_requests"
@@ -75,6 +124,35 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
+
+            <xpath expr="//sheet" position="inside">
+                <group>
+                    <field name="warehouse_status" readonly="1"/>
+                </group>
+            </xpath>
+
+            <xpath expr="//header" position="inside">
+                <button name="action_set_pending"
+                        string="Pending"
+                        type="object"
+                        class="btn btn-secondary"/>
+
+                <button name="action_set_waiting_stock"
+                        string="Waiting Stock"
+                        type="object"
+                        class="btn btn-warning"/>
+
+                <button name="action_set_ready_to_assign"
+                        string="Ready To Assign"
+                        type="object"
+                        class="btn btn-success"/>
+
+                <button name="action_set_assigned_to_shipping"
+                        string="Assigned to Shipping"
+                        type="object"
+                        class="btn btn-info"/>
+            </xpath>
+
 
             <xpath expr="//sheet/div[@name='button_box']" position="inside">
                 <div class="oe_button_box" name="button_box">
@@ -108,6 +186,20 @@
                     </button>
                 </div>
             </xpath>
+            <xpath expr="//header/button[@name='action_set_pending']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//header/button[@name='action_set_waiting_stock']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//header/button[@name='action_set_ready_to_assign']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//header/button[@name='action_set_assigned_to_shipping']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+
 
             <!-- أزرار خاصة بالإجراءات -->
             <xpath expr="//header" position="inside">
@@ -132,6 +224,16 @@
                         class="btn btn-primary"/>
             </xpath>
 
+
+                                    <!-- ✅ إضافة شريط الحالة للـ Warehouse Status -->
+            <xpath expr="//header" position="inside">
+                <div class="oe_title">
+                    <field name="warehouse_status" widget="statusbar"
+                           options="{'clickable': True}"
+                           statusbar_visible="pending,waiting_stock,ready_to_assign,assigned_to_shipping"/>
+                </div>
+            </xpath>
+
             <!-- مجموعة الحقول حسب التصميم -->
             <xpath expr="//field[@name='partner_id']" position="after">
                 <group string="Customer Info" col="2">
@@ -148,6 +250,7 @@
                     <field name="last_action_type"/>
                 </group>
             </xpath>
+
 
             <!-- عدادات عامة -->
             <xpath expr="//field[@name='payment_term_id']" position="after">

@@ -32,6 +32,13 @@ class SaleOrder(models.Model):
         ('sales_confirmed', 'Sales Confirmed'),
     ], default='process')
 
+    warehouse_status = fields.Selection([
+        ('pending', 'Pending'),
+        ('waiting_stock', 'Waiting Stock'),
+        ('ready_to_assign', 'Ready to Assign'),
+        ('assigned_to_shipping', 'Assigned to Shipping'),
+    ], string="Warehouse Status", default='pending', tracking=True, readonly=True)
+
     last_action_type = fields.Selection([
         ('no_answer', 'No Answer'),
         ('on_hold', 'On Hold'),
@@ -101,20 +108,20 @@ class SaleOrder(models.Model):
         for rec in self:
             old_state = rec.state
             rec.write({'state': 'returned'})
-            rec.message_post(body="🔁 Changed from {} ➜ Returned".format(old_state))
+            # rec.message_post(body="🔁 Changed from {} ➜ Returned".format(old_state))
 
     def mark_as_replacement(self):
         for rec in self:
             old_state = rec.state
             rec.write({'state': 'replacement'})
-            rec.message_post(body="🔁 Changed from {} ➜ Replacement".format(old_state))
+            # rec.message_post(body="🔁 Changed from {} ➜ Replacement".format(old_state))
 
     def mark_as_cancelled(self):
         for rec in self:
             if rec.state != 'cancel':
                 old_state = rec.state
                 rec.action_cancel()
-                rec.message_post(body="❌ Changed from {} ➜ Cancelled".format(old_state))
+                # rec.message_post(body="❌ Changed from {} ➜ Cancelled".format(old_state))
 
     def action_view_previous_orders(self):
         return {
@@ -161,3 +168,29 @@ class SaleOrder(models.Model):
             'view_mode': 'list,form',
             'target': 'current',
         }
+
+    def action_set_pending(self):
+        for rec in self:
+            if rec.warehouse_status != 'pending':
+                rec.warehouse_status = 'pending'
+                # rec.message_post(body="🕒 Warehouse Status ➜ Pending")
+
+    def action_set_waiting_stock(self):
+        for rec in self:
+            if rec.warehouse_status != 'waiting_stock':
+                rec.warehouse_status = 'waiting_stock'
+                # rec.message_post(body="⏳ Warehouse Status ➜ Waiting Stock")
+
+    def action_set_ready_to_assign(self):
+        for rec in self:
+            if rec.warehouse_status != 'ready_to_assign':
+                rec.warehouse_status = 'ready_to_assign'
+                # rec.message_post(body="📦 Warehouse Status ➜ Ready to Assign")
+
+    def action_set_assigned_to_shipping(self):
+        for rec in self:
+            if rec.warehouse_status != 'assigned_to_shipping':
+                rec.warehouse_status = 'assigned_to_shipping'
+                # rec.message_post(body="🚚 Warehouse Status ➜ Assigned to Shipping")
+
+
