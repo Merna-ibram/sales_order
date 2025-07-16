@@ -14,6 +14,7 @@
                             icon="fa-list">
                         <field name="num_orders" widget="statinfo" string="Customer Orders"/>
                     </button>
+
                 </div>
             </xpath>
 
@@ -30,7 +31,7 @@
             </xpath>
 
             <!-- نخفي زر Confirm -->
-            <xpath expr="//button[@name='action_confirm']" position="replace"/>
+<!--            <xpath expr="//button[@name='action_confirm']" position="replace"/>-->
 
             <!-- نضيف الزر الجديد Sales Confirm -->
             <xpath expr="//header" position="inside">
