@@ -25,6 +25,51 @@
         </field>
     </record>
 
+    <!-- ✅ Refund Requests Menu Action -->
+    <record id="action_refund_requests" model="ir.actions.act_window">
+        <field name="name">Refund Requests</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('state', '=', 'returned')]</field>
+    </record>
+
+    <!-- ✅ Replacement Orders Menu Action -->
+    <record id="action_replacement_orders" model="ir.actions.act_window">
+        <field name="name">Replacement Orders</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('state', '=', 'replacement')]</field>
+    </record>
+
+<!--    &lt;!&ndash; ✅ Cancelled Orders Menu Action &ndash;&gt;-->
+<!--    <record id="action_cancelled_orders" model="ir.actions.act_window">-->
+<!--        <field name="name">Cancelled Orders</field>-->
+<!--        <field name="res_model">sale.order</field>-->
+<!--        <field name="view_mode">list,form</field>-->
+<!--        <field name="domain">[('state', '=', 'cancel')]</field>-->
+<!--    </record>-->
+
+
+    <!-- ✅ Menu items under Orders -->
+    <menuitem id="menu_sale_refund_requests"
+              name="Refund Requests"
+              parent="sale.sale_order_menu"
+              action="action_refund_requests"
+              sequence="25"/>
+
+    <menuitem id="menu_sale_replacement_orders"
+              name="Replacement Orders"
+              parent="sale.sale_order_menu"
+              action="action_replacement_orders"
+              sequence="26"/>
+
+<!--    <menuitem id="menu_sale_cancelled_orders"-->
+<!--          name="Cancelled Orders"-->
+<!--          parent="sale.sale_order_menu"-->
+<!--          action="action_cancelled_orders"-->
+<!--          sequence="27"/>-->
+
+    <!-- ✅ Inherited Form View -->
     <record id="view_order_form_custom" model="ir.ui.view">
         <field name="name">sale.order.form.custom.view</field>
         <field name="model">sale.order</field>
