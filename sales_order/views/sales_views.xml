@@ -6,7 +6,7 @@
         <field name="name">Mark as Returned</field>
         <field name="model_id" ref="sale.model_sale_order"/>
         <field name="binding_model_id" ref="sale.model_sale_order"/>
-        <field name="binding_view_types">list</field> <!-- يظهر في الـ Tree View -->
+        <field name="binding_view_types">list</field>
         <field name="state">code</field>
         <field name="code">
             records.mark_as_returned()
@@ -25,35 +25,6 @@
         </field>
     </record>
 
-    <!-- Action: Mark as Cancelled -->
-    <record id="action_mark_as_cancelled_custom" model="ir.actions.server">
-        <field name="name">Cancel Orders</field>
-        <field name="model_id" ref="sale.model_sale_order"/>
-        <field name="binding_model_id" ref="sale.model_sale_order"/>
-        <field name="binding_view_types">list</field>
-        <field name="state">code</field>
-        <field name="code">
-            records.mark_as_cancelled()
-        </field>
-    </record>
-<!--    <record id="hide_cancel_sent" model="ir.ui.view">-->
-<!--        <field name="name">Hide Cancel/Quotation Sent Actions</field>-->
-<!--        <field name="model">sale.order</field>-->
-<!--        <field name="inherit_id" ref="sale.view_order_tree"/>-->
-<!--        <field name="arch" type="xml">-->
-<!--            <xpath expr="//button[@name='action_cancel']" position="attributes">-->
-<!--                <attribute name="invisible">1</attribute>-->
-<!--            </xpath>-->
-<!--            <xpath expr="//button[@name='action_quotation_sent']" position="attributes">-->
-<!--                <attribute name="invisible">1</attribute>-->
-<!--            </xpath>-->
-<!--        </field>-->
-<!--    </record>-->
-
-
-
-
-
     <record id="view_order_form_custom" model="ir.ui.view">
         <field name="name">sale.order.form.custom.view</field>
         <field name="model">sale.order</field>
@@ -70,12 +41,12 @@
                         <field name="num_orders" widget="statinfo" string="Customer Orders"/>
                     </button>
                     <!-- Refunds Smart Button -->
-                     <button type="object"
-                             name="action_view_refunds"
-                             class="oe_stat_button"
-                             icon="fa-undo">
-                         <field name="num_returned" widget="statinfo" string="Refunds"/>
-                     </button>
+                    <button type="object"
+                            name="action_view_refunds"
+                            class="oe_stat_button"
+                            icon="fa-undo">
+                        <field name="num_returned" widget="statinfo" string="Refunds"/>
+                    </button>
                     <!-- Replacements Smart Button -->
                     <button type="object"
                             name="action_view_replacements"
@@ -90,7 +61,6 @@
                             icon="fa-times">
                         <field name="num_cancelled" widget="statinfo" string="Cancelled"/>
                     </button>
-
                 </div>
             </xpath>
 
@@ -106,8 +76,7 @@
                 <attribute name="invisible">1</attribute>
             </xpath>
 
-
-<!--             نخفي زر Confirm-->
+            <!-- نخفي زر Confirm -->
             <xpath expr="//button[@name='action_confirm']" position="replace"/>
 
             <!-- نضيف الزر الجديد Sales Confirm -->

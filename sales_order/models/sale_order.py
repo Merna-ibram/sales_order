@@ -122,7 +122,7 @@ class SaleOrder(models.Model):
             'type': 'ir.actions.act_window',
             'res_model': 'sale.order',
             'domain': [('partner_id', '=', self.partner_id.id)],
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'target': 'current',
         }
 
@@ -135,7 +135,7 @@ class SaleOrder(models.Model):
                 ('partner_id', '=', self.partner_id.id),
                 ('state', '=', 'returned'),
             ],
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'target': 'current',
         }
 
@@ -148,7 +148,7 @@ class SaleOrder(models.Model):
                 ('partner_id', '=', self.partner_id.id),
                 ('state', '=', 'replacement'),
             ],
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'target': 'current',
         }
 
@@ -158,6 +158,6 @@ class SaleOrder(models.Model):
             'type': 'ir.actions.act_window',
             'res_model': 'sale.order',
             'domain': [('partner_id', '=', self.partner_id.id), ('state', '=', 'cancel')],
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'target': 'current',
         }
