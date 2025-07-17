@@ -35,7 +35,7 @@ class SaleOrder(models.Model):
     warehouse_status = fields.Selection([
         ('pending', 'Pending'),
         ('waiting_stock', 'Waiting Stock'),
-        ('ready_to_assign', 'Ready to Assign'),
+        # ('ready_to_assign', 'Ready to Assign'),
         ('assigned_to_shipping', 'Assigned to Shipping'),
     ], string="Warehouse Status", default='pending', tracking=True, readonly=True)
 
@@ -181,11 +181,11 @@ class SaleOrder(models.Model):
                 rec.warehouse_status = 'waiting_stock'
                 # rec.message_post(body="⏳ Warehouse Status ➜ Waiting Stock")
 
-    def action_set_ready_to_assign(self):
-        for rec in self:
-            if rec.warehouse_status != 'ready_to_assign':
-                rec.warehouse_status = 'ready_to_assign'
-                # rec.message_post(body="📦 Warehouse Status ➜ Ready to Assign")
+    # def action_set_ready_to_assign(self):
+    #     for rec in self:
+    #         if rec.warehouse_status != 'ready_to_assign':
+    #             rec.warehouse_status = 'ready_to_assign'
+    #             # rec.message_post(body="📦 Warehouse Status ➜ Ready to Assign")
 
     def action_set_assigned_to_shipping(self):
         for rec in self:
