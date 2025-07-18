@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-    <!-- Action: Mark as Returned -->
-    <record id="action_mark_as_returned" model="ir.actions.server">
-        <field name="name">Mark as Returned</field>
-        <field name="model_id" ref="sale.model_sale_order"/>
-        <field name="binding_model_id" ref="sale.model_sale_order"/>
-        <field name="binding_view_types">list</field>
-        <field name="state">code</field>
-        <field name="code">
-            records.mark_as_returned()
-        </field>
-    </record>
+<!--     Action: Mark as Returned-->
+<!--    <record id="action_mark_as_returned" model="ir.actions.server">-->
+<!--        <field name="name">Mark as Returned</field>-->
+<!--        <field name="model_id" ref="sale.model_sale_order"/>-->
+<!--        <field name="binding_model_id" ref="sale.model_sale_order"/>-->
+<!--        <field name="binding_view_types">list</field>-->
+<!--        <field name="state">code</field>-->
+<!--        <field name="code">-->
+<!--            records.mark_as_returned()-->
+<!--        </field>-->
+<!--    </record>-->
 
     <!-- Action: Mark as Replacement -->
-    <record id="action_mark_as_replacement" model="ir.actions.server">
-        <field name="name">Mark as Replacement</field>
-        <field name="model_id" ref="sale.model_sale_order"/>
-        <field name="binding_model_id" ref="sale.model_sale_order"/>
-        <field name="binding_view_types">list</field>
-        <field name="state">code</field>
-        <field name="code">
-            records.mark_as_replacement()
-        </field>
-    </record>
+<!--    <record id="action_mark_as_replacement" model="ir.actions.server">-->
+<!--        <field name="name">Mark as Replacement</field>-->
+<!--        <field name="model_id" ref="sale.model_sale_order"/>-->
+<!--        <field name="binding_model_id" ref="sale.model_sale_order"/>-->
+<!--        <field name="binding_view_types">list</field>-->
+<!--        <field name="state">code</field>-->
+<!--        <field name="code">-->
+<!--            records.mark_as_replacement()-->
+<!--        </field>-->
+<!--    </record>-->
 
     <!-- ✅ Refund Requests Menu Action -->
     <record id="action_refund_requests" model="ir.actions.act_window">
@@ -50,28 +50,28 @@
 <!--    </record>-->
 
     <!-- ✅ Set as Pending -->
-    <record id="action_set_pending" model="ir.actions.server">
-        <field name="name">Set as Pending</field>
-        <field name="model_id" ref="sale.model_sale_order"/>
-        <field name="binding_model_id" ref="sale.model_sale_order"/>
-        <field name="binding_view_types">list</field>
-        <field name="state">code</field>
-        <field name="code">
-            records.action_set_pending()
-        </field>
-    </record>
+<!--    <record id="action_set_pending" model="ir.actions.server">-->
+<!--        <field name="name">Set as Pending</field>-->
+<!--        <field name="model_id" ref="sale.model_sale_order"/>-->
+<!--        <field name="binding_model_id" ref="sale.model_sale_order"/>-->
+<!--        <field name="binding_view_types">list</field>-->
+<!--        <field name="state">code</field>-->
+<!--        <field name="code">-->
+<!--            records.action_set_pending()-->
+<!--        </field>-->
+<!--    </record>-->
 
     <!-- ✅ Set as Waiting Stock -->
-    <record id="action_set_waiting_stock" model="ir.actions.server">
-        <field name="name">Set as Waiting Stock</field>
-        <field name="model_id" ref="sale.model_sale_order"/>
-        <field name="binding_model_id" ref="sale.model_sale_order"/>
-        <field name="binding_view_types">list</field>
-        <field name="state">code</field>
-        <field name="code">
-             records.action_set_waiting_stock()
-        </field>
-    </record>
+<!--    <record id="action_set_waiting_stock" model="ir.actions.server">-->
+<!--        <field name="name">Set as Waiting Stock</field>-->
+<!--        <field name="model_id" ref="sale.model_sale_order"/>-->
+<!--        <field name="binding_model_id" ref="sale.model_sale_order"/>-->
+<!--        <field name="binding_view_types">list</field>-->
+<!--        <field name="state">code</field>-->
+<!--        <field name="code">-->
+<!--             records.action_set_waiting_stock()-->
+<!--        </field>-->
+<!--    </record>-->
 
 <!--    &lt;!&ndash; ✅ Set as Ready to Assign &ndash;&gt;-->
 <!--    <record id="action_set_ready_to_assign" model="ir.actions.server">-->
@@ -86,16 +86,16 @@
 <!--    </record>-->
 
     <!-- ✅ Set as Assigned to Shipping -->
-    <record id="action_set_assigned_to_shipping" model="ir.actions.server">
-        <field name="name">Set as Assigned to Shipping</field>
-        <field name="model_id" ref="sale.model_sale_order"/>
-        <field name="binding_model_id" ref="sale.model_sale_order"/>
-        <field name="binding_view_types">list</field>
-        <field name="state">code</field>
-        <field name="code">
-            records.action_set_assigned_to_shipping()
-        </field>
-    </record>
+<!--    <record id="action_set_assigned_to_shipping" model="ir.actions.server">-->
+<!--        <field name="name">Set as Assigned to Shipping</field>-->
+<!--        <field name="model_id" ref="sale.model_sale_order"/>-->
+<!--        <field name="binding_model_id" ref="sale.model_sale_order"/>-->
+<!--        <field name="binding_view_types">list</field>-->
+<!--        <field name="state">code</field>-->
+<!--        <field name="code">-->
+<!--            records.action_set_assigned_to_shipping()-->
+<!--        </field>-->
+<!--    </record>-->
 
 
 

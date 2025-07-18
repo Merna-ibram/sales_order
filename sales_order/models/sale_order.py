@@ -31,11 +31,12 @@ class SaleOrder(models.Model):
         ('replacement', 'Replacement'),
         ('sales_confirmed', 'Sales Confirmed'),
     ], default='process')
+    is_sales_confirmed = fields.Boolean(string="Confirmed", default=False)
 
     warehouse_status = fields.Selection([
         ('pending', 'Pending'),
         ('waiting_stock', 'Waiting Stock'),
-        # ('ready_to_assign', 'Ready to Assign'),
+        ('ready_to_assign', 'Ready to Assign'),
         ('assigned_to_shipping', 'Assigned to Shipping'),
     ], string="Warehouse Status", default='pending', tracking=True, readonly=True)
 
@@ -102,6 +103,7 @@ class SaleOrder(models.Model):
         for order in self:
             old_state = order.state
             order.state = 'sales_confirmed'
+            order.is_sales_confirmed = True
             order.message_post(body=f"✅ {old_state} --> sales_confirmed")
 
     def mark_as_returned(self):
@@ -181,11 +183,11 @@ class SaleOrder(models.Model):
                 rec.warehouse_status = 'waiting_stock'
                 # rec.message_post(body="⏳ Warehouse Status ➜ Waiting Stock")
 
-    # def action_set_ready_to_assign(self):
-    #     for rec in self:
-    #         if rec.warehouse_status != 'ready_to_assign':
-    #             rec.warehouse_status = 'ready_to_assign'
-    #             # rec.message_post(body="📦 Warehouse Status ➜ Ready to Assign")
+    def action_set_ready_to_assign(self):
+        for rec in self:
+            if rec.warehouse_status != 'ready_to_assign':
+                rec.warehouse_status = 'ready_to_assign'
+                # rec.message_post(body="📦 Warehouse Status ➜ Ready to Assign")
 
     def action_set_assigned_to_shipping(self):
         for rec in self:
