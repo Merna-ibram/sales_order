@@ -224,7 +224,7 @@
                         class="btn btn-primary" invisible="state == 'sales_confirmed'"/>
 
                   <button name="action_sales_confirm"
-                        string="Sales Confirmed"
+                        string="Confirmed"
                         type="object"
                         class="btn btn-primary" invisible="state not in (' sales_confirmed') "/>
             </xpath>

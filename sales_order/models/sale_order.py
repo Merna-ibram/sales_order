@@ -109,29 +109,33 @@ class SaleOrder(models.Model):
             order.is_sales_confirmed = True
             order.message_post(body=f"✅ {old_state} --> sales_confirmed")
 
-            picking_vals = {
-                'partner_id': order.partner_id.id,
-                'picking_type_id': order.warehouse_id.out_type_id.id,
-                'location_id': order.warehouse_id.lot_stock_id.id,
-                'location_dest_id': order.partner_id.property_stock_customer.id,
-                'origin': order.name,
-                'sale_id': order.id,
-                'state':'draft'
-            }
-
-            picking = self.env['stock.picking'].create(picking_vals)
-
-            for line in order.order_line:
-                self.env['stock.move'].create({
-                    'name': line.name,
-                    'product_id': line.product_id.id,
-                    'product_uom_qty': line.product_uom_qty,
-                    'product_uom': line.product_uom.id,
-                    'picking_id': picking.id,
+            picking_exist = self.env['stock.picking'].search([('origin', '=', order.name)], limit=1)
+            if picking_exist:
+                print(picking_exist)
+                pass
+            else:
+                picking_vals = {
+                    'partner_id': order.partner_id.id,
+                    'picking_type_id': order.warehouse_id.out_type_id.id,
                     'location_id': order.warehouse_id.lot_stock_id.id,
                     'location_dest_id': order.partner_id.property_stock_customer.id,
-                })
+                    'origin': order.name,
+                    'sale_id': order.id,
+                    'state': 'draft'
+                }
 
+                picking = self.env['stock.picking'].create(picking_vals)
+
+                for line in order.order_line:
+                    self.env['stock.move'].create({
+                        'name': line.name,
+                        'product_id': line.product_id.id,
+                        'product_uom_qty': line.product_uom_qty,
+                        'product_uom': line.product_uom.id,
+                        'picking_id': picking.id,
+                        'location_id': order.warehouse_id.lot_stock_id.id,
+                        'location_dest_id': order.partner_id.property_stock_customer.id,
+                    })
     def mark_as_returned(self):
         for rec in self:
             old_state = rec.state
