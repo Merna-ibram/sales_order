@@ -104,7 +104,7 @@ class SaleOrder(models.Model):
     def action_sales_confirm(self):
         for order in self:
             old_state = order.state
-            order.state = 'sales_confirmed'
+            order.state = 'sale'
             order.warehouse_status = 'waiting_stock'
             order.is_sales_confirmed = True
             order.message_post(body=f"✅ {old_state} --> sales_confirmed")

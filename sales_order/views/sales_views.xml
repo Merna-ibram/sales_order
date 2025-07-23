@@ -221,12 +221,12 @@
                 <button name="action_sales_confirm"
                         string="Sales Confirm"
                         type="object"
-                        class="btn btn-primary" invisible="state == 'sales_confirmed'"/>
+                        class="btn btn-primary" invisible="state == 'sale'"/>
 
                   <button name="action_sales_confirm"
                         string="Confirmed"
                         type="object"
-                        class="btn btn-primary" invisible="state not in (' sales_confirmed') "/>
+                        class="btn btn-primary" invisible="state not in ('sale') "/>
             </xpath>
 
 
