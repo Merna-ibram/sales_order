@@ -29,5 +29,8 @@ class StockPicking(models.Model):
                     if zero_qty_lines:
                         zero_qty_lines.unlink()
 
+            sales_order.write({'state': 'sale'})
+
+
 
         return res
