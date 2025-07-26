@@ -1,3 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_res_partner,access_res_partner,model_res_partner,,1,1,1,1
 access_sale_order,access_sale_order,model_sale_order,,1,1,1,1
+access_sale_order_merge_invoice_wizard,access_sale_order_merge_invoice_wizard,model_sale_order_merge_invoice_wizard,,1,1,1,1

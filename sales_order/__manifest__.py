@@ -30,6 +30,7 @@
         # Views
         'views/sales_views.xml',
         'views/partner_views.xml',
+        'views/merge_invoice_wizard_view.xml',
 
         # Wizards
 

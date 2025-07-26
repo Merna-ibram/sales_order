@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sale_order_merge_invoice_wizard_form" model="ir.ui.view">
+        <field name="name">sale.order.merge.invoice.wizard.form</field>
+        <field name="model">sale.order.merge.invoice.wizard</field>
+        <field name="arch" type="xml">
+            <form string="دمج الفواتير">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>دمج فواتير عدة عملاء</h1>
+                        <h2>اختر شركة الشحن ومراجعة الطلبات</h2>
+                    </div>
+
+                    <!-- الحقول المخفية -->
+                    <field name="sale_order_ids" invisible="1"/>
+                    <field name="partner_ids" invisible="1"/>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="orders_count" invisible="1"/>
+                    <field name="customers_count" invisible="1"/>
+
+                    <!-- معلومات الملخص -->
+                    <div class="alert alert-info" role="alert">
+                        <strong>الملخص:</strong> ستقوم بدمج
+                        <field name="orders_count" readonly="1"/> طلب بيع
+                        من <field name="customers_count" readonly="1"/> عميل مختلف
+                        بمبلغ إجمالي <field name="total_amount" readonly="1" widget="monetary"/>.
+                    </div>
+
+                    <group>
+                        <group string="تفاصيل الفاتورة">
+                            <field name="shipping_partner_id"
+                                   options="{'no_create': True, 'no_create_edit': True}"
+                                   help="هذا العميل سيظهر كالعميل الرئيسي في الفاتورة المدموجة"/>
+                        </group>
+                        <group string="الملخص">
+                            <field name="total_amount" readonly="1" widget="monetary"/>
+                            <field name="currency_id" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="أوامر البيع" name="sale_orders">
+                            <field name="sale_order_ids" readonly="1">
+                                <tree decoration-success="state == 'sale'"
+                                      decoration-info="state == 'done'"
+                                      decoration-warning="state == 'draft'">
+                                    <field name="name"/>
+                                    <field name="partner_id"/>
+                                    <field name="date_order"/>
+                                    <field name="amount_total" sum="الإجمالي"/>
+                                    <field name="currency_id" groups="base.group_multi_currency"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'sale'"
+                                           decoration-info="state == 'done'"
+                                           decoration-warning="state == 'draft'"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="العملاء" name="customers">
+                            <field name="partner_ids" readonly="1">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="email"/>
+                                    <field name="phone"/>
+                                    <field name="city"/>
+                                    <field name="country_id"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+
+                    <group string="معلومات إضافية">
+                        <field name="note" placeholder="أضف أي ملاحظات إضافية للفاتورة المدموجة..." nolabel="1"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="إنشاء فاتورة مدموجة"
+                            name="action_create_merged_invoice"
+                            type="object"
+                            class="btn-primary"
+                            data-hotkey="q"/>
+                    <button string="إلغاء"
+                            name="action_cancel"
+                            type="object"
+                            class="btn-secondary"
+                            data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
