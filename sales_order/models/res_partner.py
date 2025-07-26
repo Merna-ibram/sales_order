@@ -9,3 +9,7 @@ class ResPartner(models.Model):
         ('male', 'Male'),
         ('female', 'Female'),
     ], string="Gender")
+
+
+    def open_customer_statement(self):
+        pass
