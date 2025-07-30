@@ -235,3 +235,13 @@ class SaleOrder(models.Model):
     #
     #
     #     return arch, view
+
+    def action_open_return_wizard(self):
+        return {
+            'name': 'Sale Return',
+            'type': 'ir.actions.act_window',
+            'res_model': 'return.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_sale_order_id': self.id}
+        }

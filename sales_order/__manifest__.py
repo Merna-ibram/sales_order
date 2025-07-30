@@ -14,7 +14,7 @@
 
 
     'depends': [
-        'base','account', 'sale'
+        'base','account', 'sale','sale_management', 'stock'
     ],
 
     'data': [
@@ -31,6 +31,7 @@
         'views/sales_views.xml',
         'views/partner_views.xml',
         'views/merge_invoice_wizard_view.xml',
+        'views/sale_return_wizard_view.xml'
 
         # Wizards
 

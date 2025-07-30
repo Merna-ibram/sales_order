@@ -7,6 +7,9 @@ class StockPicking(models.Model):
         res = super(StockPicking, self).button_validate()
 
         for picking in self:
+            if picking.picking_type_id.code != 'outgoing':
+                continue
+
             if not picking.origin:
                 continue
 

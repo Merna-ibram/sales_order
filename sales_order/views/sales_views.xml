@@ -1,29 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
+    <!-- Return Wizard Form View -->
+    <record id="view_return_wizard_form" model="ir.ui.view">
+        <field name="name">return.wizard.form</field>
+        <field name="model">return.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Return Order">
+                <header>
+                    <button name="action_submit_return" string="Submit Return"
+                            type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="sale_order_id" readonly="1"/>
+                        <field name="return_reason" placeholder="اكتب سبب الإرجاع هنا..."/>
+                    </group>
 
-<!--     Action: Mark as Returned-->
-<!--    <record id="action_mark_as_returned" model="ir.actions.server">-->
-<!--        <field name="name">Mark as Returned</field>-->
-<!--        <field name="model_id" ref="sale.model_sale_order"/>-->
-<!--        <field name="binding_model_id" ref="sale.model_sale_order"/>-->
-<!--        <field name="binding_view_types">list</field>-->
-<!--        <field name="state">code</field>-->
-<!--        <field name="code">-->
-<!--            records.mark_as_returned()-->
-<!--        </field>-->
-<!--    </record>-->
+                    <notebook>
+                        <page string="Products to Return">
+                            <field name="return_line_ids">
+                                <tree editable="bottom">
+                                    <field name="product_id" readonly="1"/>
+                                    <field name="original_qty" readonly="1"/>
+                                    <field name="return_qty"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
 
-    <!-- Action: Mark as Replacement -->
-<!--    <record id="action_mark_as_replacement" model="ir.actions.server">-->
-<!--        <field name="name">Mark as Replacement</field>-->
-<!--        <field name="model_id" ref="sale.model_sale_order"/>-->
-<!--        <field name="binding_model_id" ref="sale.model_sale_order"/>-->
-<!--        <field name="binding_view_types">list</field>-->
-<!--        <field name="state">code</field>-->
-<!--        <field name="code">-->
-<!--            records.mark_as_replacement()-->
-<!--        </field>-->
-<!--    </record>-->
+    <!-- Return Wizard Action -->
+    <record id="action_return_wizard" model="ir.actions.act_window">
+        <field name="name">Return Order</field>
+        <field name="res_model">return.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- Sale Order Return Button View -->
+    <record id="sale_order_form_inherit_return" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.return</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_open_return_wizard"
+                        type="object"
+                        string="Return"
+                        class="btn btn-danger"/>
+<!--                        invisible="state != 'done'"/>-->
+            </xpath>
+        </field>
+    </record>
 
     <!-- ✅ Refund Requests Menu Action -->
     <record id="action_refund_requests" model="ir.actions.act_window">
@@ -41,64 +74,6 @@
         <field name="domain">[('state', '=', 'replacement')]</field>
     </record>
 
-<!--    &lt;!&ndash; ✅ Cancelled Orders Menu Action &ndash;&gt;-->
-<!--    <record id="action_cancelled_orders" model="ir.actions.act_window">-->
-<!--        <field name="name">Cancelled Orders</field>-->
-<!--        <field name="res_model">sale.order</field>-->
-<!--        <field name="view_mode">list,form</field>-->
-<!--        <field name="domain">[('state', '=', 'cancel')]</field>-->
-<!--    </record>-->
-
-    <!-- ✅ Set as Pending -->
-<!--    <record id="action_set_pending" model="ir.actions.server">-->
-<!--        <field name="name">Set as Pending</field>-->
-<!--        <field name="model_id" ref="sale.model_sale_order"/>-->
-<!--        <field name="binding_model_id" ref="sale.model_sale_order"/>-->
-<!--        <field name="binding_view_types">list</field>-->
-<!--        <field name="state">code</field>-->
-<!--        <field name="code">-->
-<!--            records.action_set_pending()-->
-<!--        </field>-->
-<!--    </record>-->
-
-    <!-- ✅ Set as Waiting Stock -->
-<!--    <record id="action_set_waiting_stock" model="ir.actions.server">-->
-<!--        <field name="name">Set as Waiting Stock</field>-->
-<!--        <field name="model_id" ref="sale.model_sale_order"/>-->
-<!--        <field name="binding_model_id" ref="sale.model_sale_order"/>-->
-<!--        <field name="binding_view_types">list</field>-->
-<!--        <field name="state">code</field>-->
-<!--        <field name="code">-->
-<!--             records.action_set_waiting_stock()-->
-<!--        </field>-->
-<!--    </record>-->
-
-<!--    &lt;!&ndash; ✅ Set as Ready to Assign &ndash;&gt;-->
-<!--    <record id="action_set_ready_to_assign" model="ir.actions.server">-->
-<!--        <field name="name">Set as Ready To Assign</field>-->
-<!--        <field name="model_id" ref="sale.model_sale_order"/>-->
-<!--        <field name="binding_model_id" ref="sale.model_sale_order"/>-->
-<!--        <field name="binding_view_types">list</field>-->
-<!--        <field name="state">code</field>-->
-<!--        <field name="code">-->
-<!--             records.action_set_ready_to_assign()-->
-<!--        </field>-->
-<!--    </record>-->
-
-    <!-- ✅ Set as Assigned to Shipping -->
-<!--    <record id="action_set_assigned_to_shipping" model="ir.actions.server">-->
-<!--        <field name="name">Set as Assigned to Shipping</field>-->
-<!--        <field name="model_id" ref="sale.model_sale_order"/>-->
-<!--        <field name="binding_model_id" ref="sale.model_sale_order"/>-->
-<!--        <field name="binding_view_types">list</field>-->
-<!--        <field name="state">code</field>-->
-<!--        <field name="code">-->
-<!--            records.action_set_assigned_to_shipping()-->
-<!--        </field>-->
-<!--    </record>-->
-
-
-
     <!-- ✅ Menu items under Orders -->
     <menuitem id="menu_sale_refund_requests"
               name="Refund Requests"
@@ -111,12 +86,6 @@
               parent="sale.sale_order_menu"
               action="action_replacement_orders"
               sequence="26"/>
-
-<!--    <menuitem id="menu_sale_cancelled_orders"-->
-<!--          name="Cancelled Orders"-->
-<!--          parent="sale.sale_order_menu"-->
-<!--          action="action_cancelled_orders"-->
-<!--          sequence="27"/>-->
 
     <!-- ✅ Inherited Form View -->
     <record id="view_order_form_custom" model="ir.ui.view">
@@ -142,17 +111,11 @@
                         type="object"
                         class="btn btn-warning"/>
 
-<!--                <button name="action_set_ready_to_assign"-->
-<!--                        string="Ready To Assign"-->
-<!--                        type="object"-->
-<!--                        class="btn btn-success"/>-->
-
                 <button name="action_set_assigned_to_shipping"
                         string="Assigned to Shipping"
                         type="object"
                         class="btn btn-info"/>
             </xpath>
-
 
             <xpath expr="//sheet/div[@name='button_box']" position="inside">
                 <div class="oe_button_box" name="button_box">
@@ -186,20 +149,16 @@
                     </button>
                 </div>
             </xpath>
+
             <xpath expr="//header/button[@name='action_set_pending']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
             <xpath expr="//header/button[@name='action_set_waiting_stock']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
-<!--            <xpath expr="//header/button[@name='action_set_ready_to_assign']" position="attributes">-->
-<!--                <attribute name="invisible">1</attribute>-->
-<!--            </xpath>-->
             <xpath expr="//header/button[@name='action_set_assigned_to_shipping']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
-
-
 
             <!-- أزرار خاصة بالإجراءات -->
             <xpath expr="//header" position="inside">
@@ -223,21 +182,18 @@
                         type="object"
                         class="btn btn-primary" invisible="state in ('sale','sales_confirmed')"/>
 
-                  <button name="action_sales_confirm"
+                <button name="action_sales_confirm"
                         string="Confirmed"
                         type="object"
-                        class="btn btn-primary" invisible="state not in ('sale','sales_confirmed') "/>
+                        class="btn btn-primary" invisible="state not in ('sale','sales_confirmed')"/>
             </xpath>
 
-
-                                    <!-- ✅ إضافة شريط الحالة للـ Warehouse Status -->
+            <!-- ✅ إضافة شريط الحالة للـ Warehouse Status -->
             <xpath expr="//header" position="inside">
                 <div class="oe_title">
                     <field name="warehouse_status" widget="statusbar"
                            options="{'clickable': True}"
                            statusbar_visible="pending,waiting_stock,assigned_to_shipping"/>
-<!--                           statusbar_visible="pending,waiting_stock,ready_to_assign,assigned_to_shipping"/>-->
-
                 </div>
             </xpath>
 
@@ -257,7 +213,6 @@
                     <field name="last_action_type"/>
                 </group>
             </xpath>
-
 
             <!-- عدادات عامة -->
             <xpath expr="//field[@name='payment_term_id']" position="after">
