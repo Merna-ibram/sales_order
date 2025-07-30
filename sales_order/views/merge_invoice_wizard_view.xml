@@ -41,7 +41,7 @@
                     <notebook>
                         <page string="أوامر البيع" name="sale_orders">
                             <field name="sale_order_ids" readonly="1">
-                                <tree decoration-success="state == 'sale'"
+                                <list decoration-success="state == 'sale'"
                                       decoration-info="state == 'done'"
                                       decoration-warning="state == 'draft'">
                                     <field name="name"/>
@@ -53,18 +53,18 @@
                                            decoration-success="state == 'sale'"
                                            decoration-info="state == 'done'"
                                            decoration-warning="state == 'draft'"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                         <page string="العملاء" name="customers">
                             <field name="partner_ids" readonly="1">
-                                <tree>
+                                <list>
                                     <field name="name"/>
                                     <field name="email"/>
                                     <field name="phone"/>
                                     <field name="city"/>
                                     <field name="country_id"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                     </notebook>

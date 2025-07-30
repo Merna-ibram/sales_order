@@ -14,141 +14,135 @@ class ReturnWizard(models.TransientModel):
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
+        print('Context:', self.env.context)
+
         if self.env.context.get('active_model') == 'sale.order' and self.env.context.get('active_id'):
             sale_order = self.env['sale.order'].browse(self.env.context['active_id'])
+            print('Sale order:', sale_order.name)
+            print('Order lines count:', len(sale_order.order_line))
+
             res['sale_order_id'] = sale_order.id
-            res['return_line_ids'] = [(0, 0, {
-                'product_id': line.product_id.id,
-                'original_qty': line.product_uom_qty,
-                'return_qty': line.product_uom_qty,
-                'sale_line_id': line.id,
-            }) for line in sale_order.order_line]
+            return_lines = []
+
+            for line in sale_order.order_line:
+                print(f'Processing line: {line.product_id.name}, qty: {line.product_uom_qty}')
+                line_data = {
+                    'product_id': line.product_id.id,
+                    'original_qty': line.product_uom_qty,
+                    'return_qty': line.product_uom_qty,
+                    'sale_line_id': line.id,
+                    'product_uom': line.product_uom.id
+                }
+                return_lines.append((0, 0, line_data))
+                print('Line data created:', line_data)
+
+            res['return_line_ids'] = return_lines
+            print('Total return lines created:', len(return_lines))
+        else:
+            print('No active sale order found in context')
+
         return res
 
     def action_submit_return(self):
         self.ensure_one()
         sale_order = self.sale_order_id
 
-        # التحقق من وجود عملية تسليم مكتملة
+        # Debug: Print sale order and return lines
+        print("=== DEBUG: Sale Order ===")
+        print(sale_order)
+        print("=== DEBUG: Return Lines ===")
+        for line in self.return_line_ids:
+            print(
+                f"Product: {line.product_id.name if line.product_id else 'None'}, "
+                f"Qty: {line.return_qty}, "
+                f"UoM: {line.product_uom.name if line.product_uom else 'None'}"
+            )
+
+        # Check if there's a completed delivery
         original_picking = self.env['stock.picking'].search([
             ('origin', '=', sale_order.name),
             ('state', '=', 'done')
         ], limit=1)
+        print('original_picking', original_picking)
 
         if not original_picking:
             raise UserError("لا يمكن إرجاع المنتجات لأن أمر التسليم لم يُنفذ بعد.")
 
-        # تحديد نوع عملية الإرجاع (incoming) للمستودع
+        # Find the return picking type (incoming)
         picking_type = self.env['stock.picking.type'].search([
             ('code', '=', 'incoming'),
             ('warehouse_id', '=', sale_order.warehouse_id.id)
         ], limit=1)
+        print('picking_type', picking_type)
 
         if not picking_type:
             raise UserError("لم يتم العثور على نوع عملية الإرجاع (incoming) للمستودع.")
 
-        # إنشاء الإرجاع
+        # Create the return picking
         return_picking = self.env['stock.picking'].create({
-            'origin': f"Return - {sale_order.name}",
+            'origin': f"Return - {original_picking.name}",
             'partner_id': sale_order.partner_id.id,
             'picking_type_id': picking_type.id,
             'location_id': sale_order.partner_id.property_stock_customer.id,
             'location_dest_id': sale_order.warehouse_id.lot_stock_id.id,
             'move_type': 'direct',
+            'sale_id':sale_order.id
+
         })
+        print('return_picking', return_picking)
 
+        # Create stock moves by matching return lines with sale order lines
         move_ids = []
-        for line in self.return_line_ids.filtered(lambda l: l.return_qty > 0 and l.product_id):
-            if line.return_qty > line.original_qty:
-                raise UserError(f"كمية الإرجاع لا يمكن أن تكون أكبر من الكمية الأصلية للمنتج {line.product_id.name}.")
+        for line in self.return_line_ids:
+            if line.return_qty <= 0:
+                continue  # Skip if return quantity is zero or negative
 
-            # التحقق من أن الكمية تم تسليمها بالفعل
-            delivered_qty = sum(self.env['stock.move'].search([
-                ('sale_line_id', '=', line.sale_line_id.id),
-                ('state', '=', 'done')
-            ]).mapped('quantity_done'))
+            # Find the corresponding sale order line
+            for line_order in sale_order.order_line:
 
-            if delivered_qty <= 0:
-                continue  # لم يتم تسليم هذا المنتج، لا يمكن إرجاعه
-
-            move = self.env['stock.move'].create({
+               move = self.env['stock.move'].create({
                 'name': f"Return: {line.product_id.name}",
-                'product_id': line.product_id.id,
+                'product_id': line_order.product_id.id,  # Now using line_order
                 'product_uom_qty': line.return_qty,
-                'product_uom': line.sale_line_id.product_uom.id,
+                'quantity': line.return_qty,
+                'product_uom': line_order.product_uom.id,  # Now using line_order
                 'picking_id': return_picking.id,
                 'location_id': sale_order.partner_id.property_stock_customer.id,
                 'location_dest_id': sale_order.warehouse_id.lot_stock_id.id,
-            })
-            move_ids.append(move.id)
+
+               })
+               move_ids.append(move.id)
+               print('move', move)
 
         if not move_ids:
             return_picking.unlink()
             raise UserError("لم يتم إنشاء أي منتجات للإرجاع، برجاء التأكد من الكميات.")
 
-        # تأكيد وتخصيص عملية الإرجاع
-        return_picking.action_confirm()
-        return_picking.action_assign()
+        # Confirm and assign the picking
+        return_picking.button_validate()
 
-        # زيادة عداد المرتجعات
+        # Increment the return counter
         sale_order.num_returned += 1
 
-        return {'type': 'ir.actions.act_window_close'}
-
-    def _create_return_picking(self):
-        sale_order = self.sale_order_id
-        original_picking = self.env['stock.picking'].search([
-            ('origin', '=', sale_order.name), ('state', 'in', ['done'])
-        ], limit=1)
-
-        if not original_picking:
-            return
-
-            # حدد نوع عملية الإرجاع المناسب
-            picking_type = self.env['stock.picking.type'].search([
-                ('code', '=', 'incoming'),
-                ('warehouse_id', '=', sale_order.warehouse_id.id)
-            ], limit=1)
-
-            if not picking_type:
-                raise UserError("لم يتم العثور على نوع عملية الإرجاع (incoming) للمستودع.")
-
-        return_picking = self.env['stock.picking'].create({
-            'partner_id': sale_order.partner_id.id,
-            'picking_type_id': picking_type.id,
-            'location_id': sale_order.partner_id.property_stock_customer.id,
-            'location_dest_id': sale_order.warehouse_id.lot_stock_id.id,
-            'origin': f"Return-{sale_order.name}",
-            'state': 'draft'
-        })
-
-        move_ids = []
-        for line in self.return_line_ids.filtered(lambda l: l.return_qty > 0 and l.product_id):
-            move = self.env['stock.move'].create({
-                'name': f"Return: {line.product_id.name}",
-                'product_id': line.product_id.id,
-                'product_uom_qty': line.return_qty,
-                'product_uom': line.sale_line_id.product_uom.id,
-                'picking_id': return_picking.id,
-                'location_id': sale_order.partner_id.property_stock_customer.id,
-                'location_dest_id': sale_order.warehouse_id.lot_stock_id.id,
-            })
-            move_ids.append(move.id)
-
-        if not move_ids:
-            return_picking.unlink()
-            raise UserError("لم يتم إنشاء أي منتجات للإرجاع، برجاء التأكد من الكميات.")
-
-        return_picking.action_confirm()
-        return_picking.action_assign()
-
-
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'تم بنجاح',
+                'message': f'تم إنشاء أمر الإرجاع: {return_picking.name}',
+                'type': 'success',
+                'sticky': False,
+                'next': {
+                    'type': 'ir.actions.act_window_close'  # Close the wizard after showing the notification
+                }
+            }
+        }
 class ReturnWizardLine(models.TransientModel):
     _name = 'return.wizard.line'
     _description = 'Return Wizard Line'
 
     wizard_id = fields.Many2one('return.wizard', string='Wizard')
-    product_id = fields.Many2one('product.product', string='Product', readonly=True)
+    product_id = fields.Many2one('product.product', string='Product', )
     sale_line_id = fields.Many2one('sale.order.line', string='Sale Line', readonly=True)
     original_qty = fields.Float(string='Original Quantity', readonly=True)
     return_qty = fields.Float(string='Return Quantity', default=0.0)
@@ -156,6 +150,7 @@ class ReturnWizardLine(models.TransientModel):
     delivered_qty = fields.Float(string='الكمية المسلمة', compute='_compute_delivery_return_qty')
     returned_qty = fields.Float(string='الكمية المرجعة مسبقًا', compute='_compute_delivery_return_qty')
     available_return_qty = fields.Float(string='الكمية المتاحة للإرجاع', compute='_compute_delivery_return_qty')
+    product_uom=fields.Many2one('uom.uom','Units')
 
     @api.constrains('return_qty')
     def _check_return_qty(self):
@@ -189,3 +184,6 @@ class ReturnWizardLine(models.TransientModel):
             line.delivered_qty = delivered
             line.returned_qty = returned
             line.available_return_qty = max(delivered - returned, 0.0)
+
+
+
