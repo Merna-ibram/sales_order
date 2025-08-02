@@ -2,5 +2,3 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_res_partner,access_res_partner,model_res_partner,,1,1,1,1
 access_sale_order,access_sale_order,model_sale_order,,1,1,1,1
 access_sale_order_merge_invoice_wizard_public,sale.order.merge.invoice.wizard public access,model_sale_order_merge_invoice_wizard,,1,1,1,1
-access_return_wizard,access_return_wizard,model_return_wizard,,1,1,1,1
-access_return_wizard_line,access_return_wizard_line,model_return_wizard_line,,1,1,1,1

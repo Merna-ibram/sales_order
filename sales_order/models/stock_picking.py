@@ -27,10 +27,10 @@ class StockPicking(models.Model):
                 )
                 print('existing_line',existing_line)
 
-                if existing_line:
-                    zero_qty_lines = existing_line.filtered(lambda l: l.product_uom_qty == 0)
-                    if zero_qty_lines:
-                        zero_qty_lines.unlink()
+                # if existing_line:
+                #     zero_qty_lines = existing_line.filtered(lambda l: l.product_uom_qty == 0)
+                #     if zero_qty_lines:
+                #         zero_qty_lines.unlink()
 
             sales_order.write({'state': 'sale'})
 

@@ -1,0 +1,12 @@
+<odoo>
+    <data noupdate="1">
+        <!-- Sequence for Return Orders -->
+        <record id="seq_sale_order_return" model="ir.sequence">
+            <field name="name">Sale Order Return</field>
+            <field name="code">sale.order.return</field>
+            <field name="prefix">RO</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>
