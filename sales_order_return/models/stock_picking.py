@@ -25,8 +25,10 @@ class StockPicking(models.Model):
                            sale_return.write({
                                'state':'confirm'
                            })
-                           old_return_qty = order.return_qty or 0.0  
-                           order.return_qty = old_return_qty + pro.quantity
-
+                           if order.return_qty > 0 and self.origin.startswith('Return'):
+                               old_return_qty = order.return_qty
+                               order.return_qty = old_return_qty + pro.quantity
+                           elif self.origin.startswith('Return'):
+                               order.return_qty = pro.quantity
 
         return super(StockPicking, self).button_validate()
