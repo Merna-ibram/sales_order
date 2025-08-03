@@ -70,12 +70,12 @@
                         <field name="num_orders" widget="statinfo" string="Customer Orders"/>
                     </button>
                     <!-- Refunds Smart Button -->
-                    <button type="object"
-                            name="action_view_refunds"
-                            class="oe_stat_button"
-                            icon="fa-undo">
-                        <field name="num_returned" widget="statinfo" string="Refunds"/>
-                    </button>
+<!--                    <button type="object"-->
+<!--                            name="action_view_refunds"-->
+<!--                            class="oe_stat_button"-->
+<!--                            icon="fa-undo">-->
+<!--                        <field name="num_returned" widget="statinfo" string="Refunds"/>-->
+<!--                    </button>-->
                     <!-- Replacements Smart Button -->
                     <button type="object"
                             name="action_view_replacements"

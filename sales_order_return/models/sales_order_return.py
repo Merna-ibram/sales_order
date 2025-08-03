@@ -19,7 +19,7 @@ class SaleOrder(models.Model):
     user_id = fields.Many2one('res.users', string='المستخدم', default=lambda self: self.env.user,readonly=True)
     customer_id=fields.Many2one('res.partner',string='Customer',readonly=True)
     sale_order_id = fields.Many2one('sale.order', string='Sale Order', readonly=True)
-    return_reason = fields.Text(string='Return Reason' ,required=1)
+    return_reason = fields.Text(string='Return Reason' )
     return_line_ids = fields.One2many('sale.order.return.lines', 'return_id', string='Return Lines')
     date_return = fields.Date(string="تاريخ الإرجاع", default=fields.Date.context_today)
     state=fields.Selection([('cancel','Cancel'),('confirm','Confirm')],default='cancel')

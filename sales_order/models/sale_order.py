@@ -104,14 +104,18 @@ class SaleOrder(models.Model):
     def action_sales_confirm(self):
         for order in self:
             old_state = order.state
-            order.state = 'sales_confirmed'
-            order.warehouse_status = 'waiting_stock'
+            if order.state=='sale':
+                order.state = 'sale'
+            else:
+                order.state = 'sales_confirmed'
+
             order.is_sales_confirmed = True
             order.message_post(body=f"✅ {old_state} --> sales_confirmed")
 
             picking_exist = self.env['stock.picking'].search([('origin', '=', order.name)], limit=1)
             if picking_exist:
                 print(picking_exist)
+
                 pass
             else:
                 picking_vals = {
@@ -136,6 +140,8 @@ class SaleOrder(models.Model):
                         'location_id': order.warehouse_id.lot_stock_id.id,
                         'location_dest_id': order.partner_id.property_stock_customer.id,
                     })
+                order.warehouse_status = 'waiting_stock'
+
     def mark_as_returned(self):
         for rec in self:
             old_state = rec.state
