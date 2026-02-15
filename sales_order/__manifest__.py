@@ -23,6 +23,7 @@
 
 
 
+
         # Data
 
 
@@ -33,6 +34,7 @@
         'views/merge_invoice_wizard_view.xml',
 
         # Wizards
+        'views/sale_on_hold_wizard.xml',
 
 
         # Reports

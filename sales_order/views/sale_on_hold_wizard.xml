@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_on_hold_wizard_form" model="ir.ui.view">
+        <field name="name">sale.order.on.hold.wizard.form</field>
+        <field name="model">sale.order.on.hold.wizard</field> <!-- ✅ هنا كان الغلط -->
+        <field name="arch" type="xml">
+            <form string="Set Order On Hold">
+                <group>
+                    <group>
+                        <field name="order_id" readonly="1"/>
+                        <field name="customer_name" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="hold_date" required="1"/>
+                        <field name="hold_time" required="1"/>
+                    </group>
+                </group>
+                <group>
+                    <field name="reason" placeholder="سبب الانتظار..."/>
+                    <field name="notes" placeholder="ملاحظات إضافية..."/>
+                </group>
+                <footer>
+                    <button name="action_set_on_hold"
+                            string="تأكيد الانتظار"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="إلغاء" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ✅ On Hold Wizard Action -->
+    <record id="action_on_hold_wizard" model="ir.actions.act_window">
+        <field name="name">Set On Hold</field>
+        <field name="res_model">sale.order.on.hold.wizard</field> <!-- ✅ لازم نفس اسم الموديل -->
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

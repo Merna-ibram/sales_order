@@ -26,6 +26,8 @@ class SaleOrder(models.Model):
     num_returned = fields.Integer(string="Returned Orders", compute="_compute_order_stats", store=True)
     num_delivered = fields.Integer(string="Delivered Orders", compute="_compute_order_stats", store=True)
     num_replaced = fields.Integer(string="Replaced Orders", compute="_compute_order_stats", store=True)
+    num_pending = fields.Integer(string="Pending Orders", compute="_compute_order_stats", store=True)
+
 
     state = fields.Selection(selection_add=[
         ('process', 'Processing'),
@@ -45,7 +47,8 @@ class SaleOrder(models.Model):
     last_action_type = fields.Selection([
         ('no_answer', 'No Answer'),
         ('on_hold', 'On Hold'),
-        ('call_back', 'Call Back')
+        ('call_back', 'Call Back'),
+        ('sales_confirm','Sales Confirm')
     ], string="Last Action Type", readonly=True)
 
     @api.depends('order_line.product_uom_qty')
@@ -56,46 +59,32 @@ class SaleOrder(models.Model):
     @api.depends('partner_id', 'state')
     def _compute_order_stats(self):
         for order in self:
-            if not order.partner_id:
-                order.num_orders = 0
-                order.num_cancelled = 0
-                order.num_returned = 0
-                order.num_delivered = 0
-                order.num_replaced = 0
-                continue
-
-            # جميع أوردرات العميل
             domain = [('partner_id', '=', order.partner_id.id)]
             all_orders = self.env['sale.order'].search(domain)
-
             order.num_orders = len(all_orders)
             order.num_cancelled = len(all_orders.filtered(lambda o: o.state == 'cancel'))
-
-            # عدد المرتجعات الخاصة بالعميل
-            returned_orders = self.env['sale.order.return'].search([
-                ('sale_order_id.partner_id', '=', order.partner_id.id),
-                ('state', '=', 'confirm')
-            ])
-            order.num_returned = len(returned_orders)
-
+            order.num_returned = len(all_orders.filtered(lambda o: o.state == 'returned'))
             order.num_delivered = len(all_orders.filtered(lambda o: o.state in ['sale', 'done']))
             order.num_replaced = len(all_orders.filtered(lambda o: o.state == 'replacement'))
-
-    @api.onchange('partner_id')
-    def _onchange_partner_id_set_returned_orders(self):
-        """تحديث num_returned بمجرد اختيار العميل في الفورم"""
-        if self.partner_id:
-            returned_orders = self.env['sale.order.return'].search([
-                ('sale_order_id.partner_id', '=', self.partner_id.id),
-                ('state', '=', 'confirm')
-            ])
-            self.num_returned = len(returned_orders)
-        else:
-            self.num_returned = 0
-
+            order.num_pending = (
+                    order.num_orders
+                    - (order.num_cancelled + order.num_returned + order.num_delivered + order.num_replaced)
+            )
     def write(self, vals):
+
+
+            # لو في محاولة لتغيير الحالة
+        # if 'state' in vals:
+        #     for order in self:
+        #         # لو الأوردر متأكد خلاص
+        #         if order.state == 'sales_confirmed' and vals['state'] not in ['cancel', 'returned', 'replacement']:
+        #             # نخلي الحالة زي ما هي، ونمنع التغيير
+        #             vals['state'] = 'sales_confirmed'
+
+
         state_changed = 'state' in vals
         res = super().write(vals)
+
 
         if state_changed:
             for order in self:
@@ -111,42 +100,81 @@ class SaleOrder(models.Model):
 
     def action_no_answer(self):
         for order in self:
+            if order.state == 'sales_confirmed':
+                raise models.ValidationError(
+                    "⚠️ لا يمكن وضع الطلب No Answer لأنه تم تأكيده بالفعل"
+                )
             order.attempts_count += 1
             order.attempt_date = fields.Datetime.now()
             order.last_action_type = 'no_answer'
             order.message_post(body="🔴 No Answer")
 
     def action_on_hold(self):
-        for order in self:
-            order.attempts_count += 1
-            order.attempt_date = fields.Datetime.now()
-            order.last_action_type = 'on_hold'
-            order.message_post(body="🟠 Order put On Hold")
+        self.ensure_one()
+        if self.state == 'sales_confirmed':
+            self.message_post(body="⚠️ لا يمكن وضع الطلب On Hold لأنه تم تأكيده بالفعل")
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'تنبيه',
+                    'message': 'لا يمكن وضع الطلب On Hold لأنه تم تأكيده بالفعل',
+                    'type': 'warning',
+                    'sticky': False,
+                }
+            }
+
+        return {
+            'name': 'Set Order On Hold',
+            'type': 'ir.actions.act_window',
+            'res_model': 'sale.order.on.hold.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'active_id': self.id},
+        }
 
     def action_call_back(self):
         for order in self:
+            if order.state == 'sales_confirmed':
+                order.message_post(body="⚠️ لا يمكن عمل Call Back لهذا الطلب لأنه تم تأكيده بالفعل")
+                continue
             order.attempts_count += 1
             order.attempt_date = fields.Datetime.now()
             order.last_action_type = 'call_back'
             order.message_post(body="🟡 Call Back scheduled")
 
     def action_sales_confirm(self):
-        for order in self:
-            old_state = order.state
-            if order.state=='sale':
-                order.state = 'sale'
-            else:
-                order.state = 'sales_confirmed'
 
+
+        for order in self:
+
+            if order.state == 'sales_confirmed':
+                raise models.ValidationError(
+                    "⚠️ الطلب تم تأكيده بالفعل"
+                )
+
+            order.attempts_count += 1
+            order.attempt_date = fields.Datetime.now()
+            order.last_action_type = 'sales_confirm'
+
+            old_state = order.state
+            # تغيير الحالة
+            if order.state != 'sale':
+                order.state = 'sales_confirmed'
             order.is_sales_confirmed = True
             order.message_post(body=f"✅ {old_state} --> sales_confirmed")
 
-            picking_exist = self.env['stock.picking'].search([('origin', '=', order.name)], limit=1)
-            if picking_exist:
-                print(picking_exist)
+            # تنفيذ Make Done لأي activity On Hold مرتبطة بالطلب
+            on_hold_activities = self.env['mail.activity'].search([
+                ('res_model', '=', 'sale.order'),
+                ('res_id', '=', order.id),
+                ('summary', 'like', 'متابعة طلب On Hold')
+            ])
+            on_hold_activities.action_done()  # تجعلهم Done مباشرة
 
-                pass
-            else:
+            # إنشاء الـ picking لو مش موجود
+            picking_exist = self.env['stock.picking'].search([('origin', '=', order.name)], limit=1)
+            if not picking_exist:
                 picking_vals = {
                     'partner_id': order.partner_id.id,
                     'picking_type_id': order.warehouse_id.out_type_id.id,
@@ -156,7 +184,6 @@ class SaleOrder(models.Model):
                     'sale_id': order.id,
                     'state': 'draft'
                 }
-
                 picking = self.env['stock.picking'].create(picking_vals)
 
                 for line in order.order_line:
@@ -270,4 +297,114 @@ class SaleOrder(models.Model):
     #
     #
     #     return arch, view
+
+    def action_on_hold(self):
+        """فتح wizard الـ On Hold"""
+        return {
+            'name': 'Set Order On Hold',
+            'type': 'ir.actions.act_window',
+            'res_model': 'sale.order.on.hold.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'active_id': self.id},
+        }
+
+    # def action_remove_on_hold(self):
+    #     """إزالة الطلب من حالة On Hold"""
+    #     self.ensure_one()
+    #
+    #     # إلغاء الأنشطة المجدولة
+    #     activities = self.env['mail.activity'].search([
+    #         ('res_model', '=', 'sale.order'),
+    #         ('res_id', '=', self.id),
+    #         ('summary', 'like', 'متابعة طلب On Hold')
+    #     ])
+    #     activities.unlink()
+    #
+    #     # إلغاء المهام المجدولة
+    #     cron_jobs = self.env['ir.cron'].search([
+    #         ('name', 'like', f'On Hold Notification - {self.name}')
+    #     ])
+    #     cron_jobs.unlink()
+    #
+    #     # تحديث حالة الطلب
+    #     self.write({
+    #         'state': 'draft',  # أو أي حالة مناسبة
+    #         'hold_date': False,
+    #         'hold_time': False,
+    #         'hold_reason': False,
+    #         'hold_notes': False,
+    #         'last_action_type': 'removed_from_hold',
+    #     })
+    #
+    #     self.message_post(
+    #         body="<p><strong>تم إزالة الطلب من حالة الانتظار (On Hold)</strong></p>",
+    #         subject="Removed from On Hold"
+    #     )
+    #
+    #     return {
+    #         'type': 'ir.actions.client',
+    #         'tag': 'display_notification',
+    #         'params': {
+    #             'title': 'تم بنجاح',
+    #             'message': f'تم إزالة الطلب {self.name} من حالة الانتظار',
+    #             'type': 'success',
+    #             'sticky': False,
+    #         }
+    #     }
+
+    # @api.model
+    # def check_on_hold_reminders(self):
+    #     """دالة للتحقق من تذكيرات الـ On Hold (تستدعى بواسطة Cron)"""
+    #     from datetime import datetime, timedelta
+    #
+    #     now = datetime.now()
+    #
+    #     # البحث عن الطلبات On Hold التي حان وقتها
+    #     orders = self.search([
+    #         ('state', '=', 'on_hold'),
+    #         ('hold_date', '=', now.date()),
+    #     ])
+    #
+    #     for order in orders:
+    #         if order.hold_time:
+    #             # تحويل hold_time إلى datetime
+    #             hours = int(order.hold_time)
+    #             minutes = int((order.hold_time - hours) * 60)
+    #             hold_datetime = datetime.combine(order.hold_date, datetime.min.time())
+    #             hold_datetime = hold_datetime.replace(hour=hours, minute=minutes)
+    #
+    #             # إذا حان الوقت (أو تجاوزه)
+    #             if now >= hold_datetime:
+    #                 # إرسال تنبيه
+    #                 order.message_post(
+    #                     body=f"""
+    #                     <p><strong>🔔 تنبيه: حان وقت متابعة الطلب</strong></p>
+    #                     <ul>
+    #                         <li><strong>العميل:</strong> {order.partner_id.name}</li>
+    #                         <li><strong>الهاتف:</strong> {order.phone or 'غير محدد'}</li>
+    #                         <li><strong>السبب:</strong> {order.hold_reason}</li>
+    #                     </ul>
+    #                     """,
+    #                     subject="On Hold Follow-up Time",
+    #                 )
+    #
+    #                 # إنشاء activity للمتابعة
+    #                 self.env['mail.activity'].create({
+    #                     'activity_type_id': self.env.ref('mail.mail_activity_data_call').id,
+    #                     'res_model_id': self.env['ir.model']._get('sale.order').id,
+    #                     'res_id': order.id,
+    #                     'user_id': self.env.user.id,
+    #                     'date_deadline': fields.Date.today(),
+    #                     'summary': f'متابعة طلب - {order.name}',
+    #                     'note': f"""
+    #                     <p><strong>حان وقت متابعة هذا الطلب</strong></p>
+    #                     <ul>
+    #                         <li><strong>العميل:</strong> {order.partner_id.name}</li>
+    #                         <li><strong>الهاتف:</strong> {order.phone or 'غير محدد'}</li>
+    #                         <li><strong>السبب:</strong> {order.hold_reason}</li>
+    #                         <li><strong>الملاحظات:</strong> {order.hold_notes or 'لا توجد'}</li>
+    #                     </ul>
+    #                     """,
+    #                 })
 
