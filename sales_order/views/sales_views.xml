@@ -2,12 +2,12 @@
 <odoo>
 
     <!-- ✅ Refund Requests Menu Action -->
-    <record id="action_refund_requests" model="ir.actions.act_window">
-        <field name="name">Refund Requests</field>
-        <field name="res_model">sale.order</field>
-        <field name="view_mode">list,form</field>
-        <field name="domain">[('state', '=', 'returned')]</field>
-    </record>
+<!--    <record id="action_refund_requests" model="ir.actions.act_window">-->
+<!--        <field name="name">Refund Requests</field>-->
+<!--        <field name="res_model">sale.order</field>-->
+<!--        <field name="view_mode">list,form</field>-->
+<!--        <field name="domain">[('state', '=', 'returned')]</field>-->
+<!--    </record>-->
 
     <!-- ✅ Replacement Orders Menu Action -->
     <record id="action_replacement_orders" model="ir.actions.act_window">
@@ -18,11 +18,11 @@
     </record>
 
     <!-- ✅ Menu items under Orders -->
-    <menuitem id="menu_sale_refund_requests"
-              name="Refund Requests"
-              parent="sale.sale_order_menu"
-              action="action_refund_requests"
-              sequence="25"/>
+<!--    <menuitem id="menu_sale_refund_requests"-->
+<!--              name="Refund Requests"-->
+<!--              parent="sale.sale_order_menu"-->
+<!--              action="action_refund_requests"-->
+<!--              sequence="25"/>-->
 
     <menuitem id="menu_sale_replacement_orders"
               name="Replacement Orders"

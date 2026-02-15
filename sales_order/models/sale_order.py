@@ -56,13 +56,42 @@ class SaleOrder(models.Model):
     @api.depends('partner_id', 'state')
     def _compute_order_stats(self):
         for order in self:
+            if not order.partner_id:
+                order.num_orders = 0
+                order.num_cancelled = 0
+                order.num_returned = 0
+                order.num_delivered = 0
+                order.num_replaced = 0
+                continue
+
+            # جميع أوردرات العميل
             domain = [('partner_id', '=', order.partner_id.id)]
             all_orders = self.env['sale.order'].search(domain)
+
             order.num_orders = len(all_orders)
             order.num_cancelled = len(all_orders.filtered(lambda o: o.state == 'cancel'))
-            order.num_returned = len(all_orders.filtered(lambda o: o.state == 'returned'))
+
+            # عدد المرتجعات الخاصة بالعميل
+            returned_orders = self.env['sale.order.return'].search([
+                ('sale_order_id.partner_id', '=', order.partner_id.id),
+                ('state', '=', 'confirm')
+            ])
+            order.num_returned = len(returned_orders)
+
             order.num_delivered = len(all_orders.filtered(lambda o: o.state in ['sale', 'done']))
             order.num_replaced = len(all_orders.filtered(lambda o: o.state == 'replacement'))
+
+    @api.onchange('partner_id')
+    def _onchange_partner_id_set_returned_orders(self):
+        """تحديث num_returned بمجرد اختيار العميل في الفورم"""
+        if self.partner_id:
+            returned_orders = self.env['sale.order.return'].search([
+                ('sale_order_id.partner_id', '=', self.partner_id.id),
+                ('state', '=', 'confirm')
+            ])
+            self.num_returned = len(returned_orders)
+        else:
+            self.num_returned = 0
 
     def write(self, vals):
         state_changed = 'state' in vals
