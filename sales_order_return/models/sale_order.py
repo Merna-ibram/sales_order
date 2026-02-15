@@ -7,7 +7,7 @@ from odoo.exceptions import UserError
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
-    sale_order_return_count=fields.Integer(compute='return_count')
+    sale_order_return_count=fields.Float(compute='return_count')
 
     def return_count(self):
         for rec in self:
@@ -15,7 +15,7 @@ class SaleOrder(models.Model):
 
     def action_open_return_wizard(self):
 
-        returnable_lines = self.order_line.filtered(lambda line: line.product_uom_qty >= line.return_qty)
+        returnable_lines = self.order_line.filtered(lambda line: line.product_uom_qty > line.return_qty)
 
         if not returnable_lines:
             raise UserError('You Cannot Make Return Because No Items Available for Return')
